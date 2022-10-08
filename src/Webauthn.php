@@ -224,7 +224,7 @@ class Webauthn
         $attestationObject = new AttestationObject($attestationObject, $this->formats);
 
         // 9. Verify that the RP ID hash in authData is indeed the SHA-256 hash of the RP ID expected by the RP.
-        if (! $attestationObject->validateRpIdHash($this->replyingParty->idHash)) {
+        if (! $attestationObject->validateRpIdHash($this->replyingParty->hashId())) {
             throw new WebauthnException('invalid rpId hash', WebauthnException::INVALID_RELYING_PARTY);
         }
 
