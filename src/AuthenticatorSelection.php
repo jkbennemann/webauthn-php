@@ -7,10 +7,10 @@ class AuthenticatorSelection
     public string $residentKeyType;
     public string $authenticatorAttachment = 'cross-platform';
 
-    public function __construct(public string $verificationType, public bool $requiresResidentKey, public bool $crossPlatform)
+    public function __construct(public string $userVerification, public bool $requiresResidentKey, public bool $crossPlatform)
     {
         if ($this->requiresResidentKey) {
-            $this->residentKeyType = $this->verificationType;
+            $this->residentKeyType = $userVerification;
         }
 
         if (! $this->crossPlatform) {
