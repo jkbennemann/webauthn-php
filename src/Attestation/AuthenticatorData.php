@@ -3,6 +3,7 @@
 namespace Jkbennemann\Webauthn\Attestation;
 
 use Jkbennemann\Webauthn\Exceptions\WebauthnException;
+use Jkbennemann\Webauthn\Util\CborDecoder;
 
 class AuthenticatorData
 {
