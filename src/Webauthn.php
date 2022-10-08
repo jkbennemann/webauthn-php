@@ -26,7 +26,6 @@ class Webauthn
     private string $challenge = '';
     private array $certificates = [];
     private int $signatureCounter = 0;
-    private string $rpId = '';
     private ReplyingParty $replyingParty;
 
     /**
@@ -45,8 +44,6 @@ class Webauthn
         $this->formats = $this->normalizedFormats($allowedFormats);
 
         $this->replyingParty = new ReplyingParty($this->configuration->name, $this->configuration->identifier);
-
-        ray($this);
     }
 
     /**
@@ -173,8 +170,6 @@ class Webauthn
 //        }
 
 //        return $args;
-
-        ray($publicKey);
 
         return $publicKey;
     }
