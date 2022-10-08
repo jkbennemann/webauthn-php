@@ -12,7 +12,8 @@ class FidoU2F extends BaseFormat
     private $_signature;
     private $_x5c;
 
-    public function __construct($AttestionObject, AuthenticatorData $authenticatorData) {
+    public function __construct($AttestionObject, AuthenticatorData $authenticatorData)
+    {
         parent::__construct($AttestionObject, $authenticatorData);
 
         // check u2f data
@@ -22,15 +23,15 @@ class FidoU2F extends BaseFormat
             throw new WebauthnException('u2f only accepts algorithm -7 ("ES256"), but got ' . $attStmt['alg'], WebauthnException::INVALID_DATA);
         }
 
-        if (!\array_key_exists('sig', $attStmt) || !\is_object($attStmt['sig']) || !($attStmt['sig'] instanceof ByteBuffer)) {
+        if (! \array_key_exists('sig', $attStmt) || ! \is_object($attStmt['sig']) || ! ($attStmt['sig'] instanceof ByteBuffer)) {
             throw new WebauthnException('no signature found', WebauthnException::INVALID_DATA);
         }
 
-        if (!\array_key_exists('x5c', $attStmt) || !\is_array($attStmt['x5c']) || \count($attStmt['x5c']) !== 1) {
+        if (! \array_key_exists('x5c', $attStmt) || ! \is_array($attStmt['x5c']) || \count($attStmt['x5c']) !== 1) {
             throw new WebauthnException('invalid x5c certificate', WebauthnException::INVALID_DATA);
         }
 
-        if (!\is_object($attStmt['x5c'][0]) || !($attStmt['x5c'][0] instanceof ByteBuffer)) {
+        if (! \is_object($attStmt['x5c'][0]) || ! ($attStmt['x5c'][0] instanceof ByteBuffer)) {
             throw new WebauthnException('invalid x5c certificate', WebauthnException::INVALID_DATA);
         }
 
@@ -38,22 +39,24 @@ class FidoU2F extends BaseFormat
         $this->_x5c = $attStmt['x5c'][0]->getBinaryString();
     }
 
-
     /*
      * returns the key certificate in PEM format
      * @return string
      */
-    public function getCertificatePem() {
+    public function getCertificatePem()
+    {
         $pem = '-----BEGIN CERTIFICATE-----' . "\n";
         $pem .= \chunk_split(\base64_encode($this->_x5c), 64, "\n");
         $pem .= '-----END CERTIFICATE-----' . "\n";
+
         return $pem;
     }
 
     /**
      * @param string $clientDataHash
      */
-    public function validateAttestation($clientDataHash) {
+    public function validateAttestation($clientDataHash)
+    {
         $publicKey = \openssl_pkey_get_public($this->getCertificatePem());
 
         if ($publicKey === false) {
@@ -76,10 +79,11 @@ class FidoU2F extends BaseFormat
     /**
      * validates the certificate against root certificates
      * @param array $rootCas
-     * @return boolean
+     * @return bool
      * @throws WebauthnException
      */
-    public function validateRootCertificate($rootCas) {
+    public function validateRootCertificate($rootCas)
+    {
         $chainC = $this->_createX5cChainFile();
         if ($chainC) {
             $rootCas[] = $chainC;
@@ -89,6 +93,7 @@ class FidoU2F extends BaseFormat
         if ($v === -1) {
             throw new WebauthnException('error on validating root certificate: ' . \openssl_error_string(), WebauthnException::CERTIFICATE_NOT_TRUSTED);
         }
+
         return $v;
     }
 }

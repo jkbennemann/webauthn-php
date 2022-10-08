@@ -2,11 +2,12 @@
 
 namespace Jkbennemann\Webauthn;
 
-use Jkbennemann\Webauthn\Attestation\AttestationObject;
 use function count;
 use function hash;
 use function in_array;
 use function is_object;
+
+use Jkbennemann\Webauthn\Attestation\AttestationObject;
 
 use Jkbennemann\Webauthn\Enums\KeyFormat;
 use Jkbennemann\Webauthn\Enums\UserVerification;
