@@ -260,14 +260,14 @@ class Webauthn
         $data = new stdClass();
         $data->rpId = $this->replyingParty->id;
         $data->attestationFormat = $attestationObject->getAttestationFormatName();
-        $data->credentialId = $attestationObject->getAuthenticatorData()->getCredentialId();
+        $data->credentialId = bin2hex($attestationObject->getAuthenticatorData()->getCredentialId());
         $data->credentialPublicKey = $attestationObject->getAuthenticatorData()->getPublicKeyPem();
         $data->certificateChain = $attestationObject->getCertificateChain();
         $data->certificate = $attestationObject->getCertificatePem();
         $data->certificateIssuer = $attestationObject->getCertificateIssuer();
         $data->certificateSubject = $attestationObject->getCertificateSubject();
         $data->signatureCounter = $this->signatureCounter;
-        $data->AAGUID = $attestationObject->getAuthenticatorData()->getAAGUID();
+        $data->AAGUID = bin2hex($attestationObject->getAuthenticatorData()->getAAGUID());
         $data->rootValid = $rootValid;
         $data->userPresent = $userPresent;
         $data->userVerified = $userVerified;
