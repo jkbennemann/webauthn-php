@@ -16,7 +16,7 @@ class PublicKey
         public AuthenticatorSelection $authenticatorSelection,
         int $timeout,
         public string $challenge,
-        public string $attestation,
+        public ?string $attestation,
         public array $allowedCredentials = [],
         public array $excludeCredentials = [],
     ) {
