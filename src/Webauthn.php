@@ -87,7 +87,7 @@ class Webauthn
         }
 
         if ($withoutAttestation) {
-            $attestation = null;
+            $attestation = 'none';
         }
 
         $rp = new ReplyingParty($this->configuration->name, $this->configuration->identifier);
@@ -99,7 +99,7 @@ class Webauthn
             $authenticatorSelection,
             $this->configuration->timeout,
             $this->createChallenge($this->configuration->challengeLength),
-            count($this->formats) === 1 && in_array('none', $this->formats) ? null : $attestation,
+            count($this->formats) === 1 && in_array('none', $this->formats) ? 'none' : $attestation,
             [],
             $excludeCredentials
         );
