@@ -2,9 +2,9 @@
 
 namespace Jkbennemann\Webauthn\Attestation;
 
+use Jkbennemann\Webauthn\ByteBuffer;
 use Jkbennemann\Webauthn\Exceptions\WebauthnException;
 use Jkbennemann\Webauthn\Util\CborDecoder;
-use Jkbennemann\Webauthn\ByteBuffer;
 
 class AuthenticatorData
 {
