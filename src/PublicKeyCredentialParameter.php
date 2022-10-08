@@ -6,7 +6,7 @@ class PublicKeyCredentialParameter
 {
     public string $type = 'public-key';
 
-    public function __construct(public int $algo)
+    public function __construct(public int $alg)
     {
     }
 }
