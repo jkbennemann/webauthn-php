@@ -2,21 +2,17 @@
 
 namespace Jkbennemann\Webauthn;
 
-use Jkbennemann\Webauthn\Exceptions\WebauthnException;
-
 class ReplyingParty
 {
     public string $idHash;
 
-    /**
-     * @throws WebauthnException
-     */
     public function __construct(public string $name, public string $id)
     {
+        $this->idHash = $this->hashId();
     }
 
-    private function hastId(): string
+    private function hashId(): string
     {
-        $this->idHash = hash('sha256', $this->id, true);
+        return hash('sha256', $this->id, true);
     }
 }
