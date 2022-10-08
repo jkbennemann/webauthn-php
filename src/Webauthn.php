@@ -54,7 +54,7 @@ class Webauthn
         $userName,
         $userDisplayName,
         string $userVerificationType,
-        bool $crossPlatformAttachment,
+        ?bool $crossPlatformAttachment,
         $excludeCredentialIds = [],
         bool $withoutAttestation = false
     ) {
