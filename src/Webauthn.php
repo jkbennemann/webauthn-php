@@ -52,8 +52,15 @@ class Webauthn
     /**
      * @throws WebauthnException
      */
-    public function getCreateArgs($userId, $userName, $userDisplayName, string $userVerificationType, bool $crossPlatformAttachment, $excludeCredentialIds = [])
-    {
+    public function getCreateArgs(
+        $userId,
+        $userName,
+        $userDisplayName,
+        string $userVerificationType,
+        bool $crossPlatformAttachment,
+        $excludeCredentialIds = [],
+        bool $withoutAttestation = false
+    ) {
 //        validate User Verification Requirement
 //        if (\is_bool($requireUserVerification)) {
 //            $requireUserVerification = $requireUserVerification ? 'required' : 'preferred';
@@ -80,6 +87,10 @@ class Webauthn
         $attestation = 'indirect';
         if (count($this->certificates)) {
             $attestation = 'direct';
+        }
+
+        if ($withoutAttestation) {
+            $attestation = 'none';
         }
 
         $rp = new ReplyingParty($this->configuration->name, $this->configuration->identifier);
