@@ -122,10 +122,10 @@ class AuthenticatorData
         switch ($this->_attestedCredentialData->credentialPublicKey->kty) {
             case self::$_EC2_TYPE: $der = $this->_getEc2Der();
 
-            break;
+                break;
             case self::$_RSA_TYPE: $der = $this->_getRsaDer();
 
-            break;
+                break;
             default: throw new WebauthnException('invalid key type', WebauthnException::INVALID_DATA);
         }
 
@@ -303,10 +303,10 @@ class AuthenticatorData
         switch ($credPKey->alg) {
             case self::$_EC2_ES256: $this->_readCredentialPublicKeyES256($credPKey, $enc);
 
-            break;
+                break;
             case self::$_RSA_RS256: $this->_readCredentialPublicKeyRS256($credPKey, $enc);
 
-            break;
+                break;
         }
 
         return $credPKey;

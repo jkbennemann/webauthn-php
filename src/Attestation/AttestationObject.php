@@ -48,13 +48,13 @@ class AttestationObject
 //            case 'apple': $this->_attestationFormat = new Format\Apple($enc, $this->_authenticatorData); break;
             case 'fido-u2f': $this->_attestationFormat = new FidoU2F($enc, $this->_authenticatorData);
 
-            break;
+                break;
             case 'none': $this->_attestationFormat = new None($enc, $this->_authenticatorData);
 
-            break;
+                break;
             case 'packed': $this->_attestationFormat = new Format\Packed($enc, $this->_authenticatorData);
 
-            break;
+                break;
 //            case 'tpm': $this->_attestationFormat = new Format\Tpm($enc, $this->_authenticatorData); break;
             default: throw new WebauthnException('invalid attestation format: ' . $enc['fmt'], WebauthnException::INVALID_DATA);
         }
