@@ -18,6 +18,10 @@ class PublicKey
     public array $allowCredentials;
     public string $attestation = 'direct';
 
+    //only for login
+    public string $rpId;
+    public string $userVerification;
+
     public function __construct(
 
     ) {
@@ -31,6 +35,20 @@ class PublicKey
     public function setReplyParty(ReplyingParty $rp): self
     {
         $this->rp = $rp;
+
+        return $this;
+    }
+
+    public function setReplyPartyId(string $rpId): self
+    {
+        $this->rpId = $rpId;
+
+        return $this;
+    }
+
+    public function setUserVerification(string $userVerification): self
+    {
+        $this->userVerification = $userVerification;
 
         return $this;
     }

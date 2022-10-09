@@ -101,8 +101,7 @@ class Webauthn
      */
     public function getVerifyArgs(
         string $requireUserVerification,
-        array $credentialIds = [],
-        int $timeout = 60,
+        array $credentialIds = []
     ): PublicKey {
 //        // validate User Verification Requirement
 //        if (\is_bool($requireUserVerification)) {
@@ -121,15 +120,24 @@ class Webauthn
             );
         }
 
-        return new PublicKey(
-            $this->replyingParty,
-            new User('', '', ''),
-            new AuthenticatorSelection($requireUserVerification, false, null),
-            $timeout,
-            $this->createChallenge($this->configuration->challengeLength)->jsonSerialize(),
-            null,
-            $allowedCredentials
-        );
+
+        return (new PublicKey())
+            ->setAllowCredentials($allowedCredentials)
+            ->setReplyPartyId($this->replyingParty->id)
+            ->setChallenge($this->createChallenge($this->configuration->challengeLength))
+            ->setTimeout($this->configuration->timeout)
+            ->setUserVerification($requireUserVerification);
+
+
+//        return new PublicKey(
+//            $this->replyingParty,
+//            new User('', '', ''),
+//            new AuthenticatorSelection($requireUserVerification, false, null),
+//            $timeout,
+//            $this->createChallenge($this->configuration->challengeLength)->jsonSerialize(),
+//            null,
+//            $allowedCredentials
+//        );
 
 //        $args = new \stdClass();
 //        $args->publicKey = new \stdClass();
