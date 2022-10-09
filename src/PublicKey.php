@@ -16,7 +16,7 @@ class PublicKey
     public ByteBuffer $challenge;
     public array $excludeCredentials;
     public array $allowCredentials;
-    public string $attestation = 'direct';
+    public string $attestation;
 
     //only for login
     public string $rpId;
