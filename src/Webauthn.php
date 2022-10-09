@@ -126,7 +126,7 @@ class Webauthn
             new User('', '', ''),
             new AuthenticatorSelection($requireUserVerification, false, null),
             $timeout,
-            $this->createChallenge($this->configuration->challengeLength),
+            $this->createChallenge($this->configuration->challengeLength)->jsonSerialize(),
             null,
             $allowedCredentials
         );
