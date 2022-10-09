@@ -10,7 +10,6 @@ use function is_object;
 use Jkbennemann\Webauthn\Attestation\AttestationObject;
 
 use Jkbennemann\Webauthn\Enums\KeyFormat;
-use Jkbennemann\Webauthn\Enums\UserVerification;
 use Jkbennemann\Webauthn\Exceptions\WebauthnException;
 
 use function json_decode;
@@ -57,16 +56,14 @@ class Webauthn
         ?bool $crossPlatformAttachment,
         $excludeCredentialIds = [],
         bool $withoutAttestation = false
-    ) {
+    ): PublicKey {
         $excludeCredentials = [];
         if (is_array($excludeCredentialIds)) {
             foreach ($excludeCredentialIds as $id) {
-                $tmp = new UserCredential($id, ['usb', 'ble', 'nfc', 'internal']);
-//                $tmp->id = $id instanceof ByteBuffer ? $id : new ByteBuffer($id);  // binary
-                $tmp->type = 'public-key';
-//                $tmp->transports = array('usb', 'ble', 'nfc', 'internal');
-
-                $excludeCredentials[] = $tmp;
+                $excludeCredentials[] = new UserCredential(
+                    new ByteBuffer(hex2bin($id)),
+                    ['usb', 'ble', 'nfc', 'internal']
+                );
             }
         }
 
@@ -81,7 +78,7 @@ class Webauthn
 
         $rp = new ReplyingParty($this->configuration->name, $this->configuration->identifier);
         $user = new User(new ByteBuffer($userId), $userName, $userDisplayName);
-        ray($userId);
+
         $authenticatorSelection = new AuthenticatorSelection($userVerificationType, false, $crossPlatformAttachment);
         $publicKey = (new PublicKey())
             ->setUser($user)
@@ -94,8 +91,6 @@ class Webauthn
             ->addPublicKeys()
             ->setAttestation($attestation);
 
-        ray("public key", $publicKey);
-
         return $publicKey;
     }
 
@@ -106,15 +101,6 @@ class Webauthn
         string $requireUserVerification,
         array $credentialIds = []
     ): PublicKey {
-//        // validate User Verification Requirement
-//        if (\is_bool($requireUserVerification)) {
-//            $requireUserVerification = $requireUserVerification ? 'required' : 'preferred';
-//        } else if (\is_string($requireUserVerification) && \in_array(\strtolower($requireUserVerification), ['required', 'preferred', 'discouraged'])) {
-//            $requireUserVerification = \strtolower($requireUserVerification);
-//        } else {
-//            $requireUserVerification = 'preferred';
-//        }
-
         $allowedCredentials = [];
         foreach ($credentialIds as $id) {
             $allowedCredentials[] = new PublicKeyLoginParameter(
@@ -123,32 +109,12 @@ class Webauthn
             );
         }
 
-
         return (new PublicKey())
             ->setAllowCredentials($allowedCredentials)
             ->setReplyPartyId($this->replyingParty->id)
             ->setChallenge($this->createChallenge($this->configuration->challengeLength))
             ->setTimeout($this->configuration->timeout)
             ->setUserVerification($requireUserVerification);
-
-
-//        return new PublicKey(
-//            $this->replyingParty,
-//            new User('', '', ''),
-//            new AuthenticatorSelection($requireUserVerification, false, null),
-//            $timeout,
-//            $this->createChallenge($this->configuration->challengeLength)->jsonSerialize(),
-//            null,
-//            $allowedCredentials
-//        );
-
-//        $args = new \stdClass();
-//        $args->publicKey = new \stdClass();
-//        $args->publicKey->timeout = $timeout * 1000; // microseconds
-//        $args->publicKey->challenge = $this->_createChallenge();  // binary
-//        $args->publicKey->userVerification = $requireUserVerification;
-//        $args->publicKey->rpId = $this->replyingParty->id;
-//        return $args;
     }
 
     /**
@@ -192,7 +158,7 @@ class Webauthn
             throw new WebauthnException('invalid challenge', WebauthnException::INVALID_CHALLENGE);
         }
 
-        // 5. Verify that the value of C.origin matches the Relying Party's origin.
+        // 5. Verify that the value of C.origin matches the Replying Party's origin.
         if (! property_exists($clientData, 'origin') || ! $this->checkOrigin($clientData->origin)) {
             throw new WebauthnException('invalid origin', WebauthnException::INVALID_ORIGIN);
         }
