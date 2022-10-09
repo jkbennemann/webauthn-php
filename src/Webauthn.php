@@ -117,6 +117,7 @@ class Webauthn
 
         $allowedCredentials = [];
         foreach ($credentialIds as $id) {
+            ray($id);
             $allowedCredentials[] = new PublicKeyLoginParameter(
                 $id instanceof ByteBuffer ? $id : new ByteBuffer($id),
                 $this->configuration->allowedTransportTypes,
