@@ -81,6 +81,7 @@ class Webauthn
 
         $rp = new ReplyingParty($this->configuration->name, $this->configuration->identifier);
         $user = new User(new ByteBuffer($userId), $userName, $userDisplayName);
+        ray($userId);
         $authenticatorSelection = new AuthenticatorSelection($userVerificationType, false, $crossPlatformAttachment);
         $publicKey = (new PublicKey())
             ->setUser($user)
