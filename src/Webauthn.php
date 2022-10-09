@@ -13,6 +13,7 @@ use Jkbennemann\Webauthn\Enums\KeyFormat;
 use Jkbennemann\Webauthn\Exceptions\WebauthnException;
 
 use function json_decode;
+use function openssl_verify;
 use function preg_match;
 use function preg_quote;
 use function property_exists;
@@ -118,24 +119,16 @@ class Webauthn
     }
 
     /**
-     * process a create request and returns data to save for future logins
-     * @param string $clientDataJSON binary from browser
-     * @param string $attestationObject binary from browser
-     * @param string|ByteBuffer $challenge binary used challange
-     * @param bool $requireUserVerification true, if the device must verify user (e.g. by biometric data or pin)
-     * @param bool $requireUserPresent false, if the device must NOT check user presence (e.g. by pressing a button)
-     * @param bool $failIfRootMismatch false, if there should be no error thrown if root certificate doesn't match
-     * @return stdClass
      * @throws WebauthnException
      */
     public function processCreate(
-        $clientDataJSON,
-        $attestationObject,
-        $challenge,
-        $requireUserVerification = false,
-        $requireUserPresent = true,
-        $failIfRootMismatch = true
-    ) {
+        string $clientDataJSON,
+        string $attestationObject,
+        string $challenge,
+        bool $requireUserVerification = false,
+        bool $requireUserPresent = true,
+        bool $failIfRootMismatch = true
+    ): stdClass {
         $clientDataHash = hash('sha256', $clientDataJSON, true);
         $clientData = json_decode($clientDataJSON);
         $challenge = $challenge instanceof ByteBuffer ? $challenge : new ByteBuffer($challenge);
@@ -216,6 +209,112 @@ class Webauthn
         $data->userVerified = $userVerified;
 
         return $data;
+    }
+
+    /**
+     * @throws WebauthnException
+     */
+    public function processGet(
+        $clientDataJSON,
+        $authenticatorData,
+        $signature,
+        $credentialPublicKey,
+        $challenge,
+        $prevSignatureCnt = null,
+        $requireUserVerification = false,
+        $requireUserPresent = true
+    ): bool {
+        $authenticatorObj = new Attestation\AuthenticatorData($authenticatorData);
+        $clientDataHash = hash('sha256', $clientDataJSON, true);
+        $clientData = json_decode($clientDataJSON);
+        $challenge = new ByteBuffer($challenge);
+
+        // https://www.w3.org/TR/webauthn/#verifying-assertion
+
+        // 1. If the allowCredentials option was given when this authentication ceremony was initiated,
+        //    verify that credential.id identifies one of the public key credentials that were listed in allowCredentials.
+        //    -> TO BE VERIFIED BY IMPLEMENTATION
+
+        // 2. If credential.response.userHandle is present, verify that the user identified
+        //    by this value is the owner of the public key credential identified by credential.id.
+        //    -> TO BE VERIFIED BY IMPLEMENTATION
+
+        // 3. Using credential’s id attribute (or the corresponding rawId, if base64url encoding is
+        //    inappropriate for your use case), look up the corresponding credential public key.
+        //    -> TO BE LOOKED UP BY IMPLEMENTATION
+
+        // 5. Let JSON text be the result of running UTF-8 decode on the value of cData.
+        if (! is_object($clientData)) {
+            throw new WebauthnException('invalid client data', WebauthnException::INVALID_DATA);
+        }
+
+        // 7. Verify that the value of C.type is the string webauthn.get.
+        if (! property_exists($clientData, 'type') || $clientData->type !== 'webauthn.get') {
+            throw new WebauthnException('invalid type', WebauthnException::INVALID_TYPE);
+        }
+
+        // 8. Verify that the value of C.challenge matches the challenge that was sent to the
+        //    authenticator in the PublicKeyCredentialRequestOptions passed to the get() call.
+        if (! property_exists($clientData, 'challenge') || ByteBuffer::fromBase64Url($clientData->challenge)->getBinaryString() !== $challenge->getBinaryString()) {
+            throw new WebauthnException('invalid challenge', WebauthnException::INVALID_CHALLENGE);
+        }
+
+        // 9. Verify that the value of C.origin matches the Replying Party's origin.
+        if (! property_exists($clientData, 'origin') || ! $this->checkOrigin($clientData->origin)) {
+            throw new WebauthnException('invalid origin', WebauthnException::INVALID_ORIGIN);
+        }
+
+        // 11. Verify that the rpIdHash in authData is the SHA-256 hash of the RP ID expected by the Replying Party.
+        if ($authenticatorObj->getRpIdHash() !== $this->replyingParty->hashId()) {
+            throw new WebauthnException('invalid rpId hash', WebauthnException::INVALID_RELYING_PARTY);
+        }
+
+        // 12. Verify that the User Present bit of the flags in authData is set
+        if ($requireUserPresent && ! $authenticatorObj->getUserPresent()) {
+            throw new WebauthnException('user not present during authentication', WebauthnException::USER_PRESENT);
+        }
+
+        // 13. If user verification is required for this assertion, verify that the User Verified bit of the flags in authData is set.
+        if ($requireUserVerification && ! $authenticatorObj->getUserVerified()) {
+            throw new WebauthnException('user not verified during authentication', WebauthnException::USER_UNVERIFIED);
+        }
+
+        // 14. Verify the values of the client extension outputs
+        //     (extensions not implemented)
+
+        // 16. Using the credential public key looked up in step 3, verify that sig is a valid signature
+        //     over the binary concatenation of authData and hash.
+        $dataToVerify = '';
+        $dataToVerify .= $authenticatorData;
+        $dataToVerify .= $clientDataHash;
+
+        $publicKey = openssl_pkey_get_public($credentialPublicKey);
+        if ($publicKey === false) {
+            throw new WebauthnException('public key invalid', WebauthnException::INVALID_PUBLIC_KEY);
+        }
+
+        if (openssl_verify($dataToVerify, $signature, $publicKey, OPENSSL_ALGO_SHA256) !== 1) {
+            throw new WebauthnException('invalid signature', WebauthnException::INVALID_SIGNATURE);
+        }
+
+        $signatureCounter = $authenticatorObj->getSignCount();
+        if ($signatureCounter !== 0) {
+            $this->signatureCounter = $signatureCounter;
+        }
+
+        // 17. If either of the signature counter value authData.signCount or
+        //     previous signature count is nonzero, and if authData.signCount
+        //     less than or equal to previous signature count, it's a signal
+        //     that the authenticator may be cloned
+        if ($prevSignatureCnt !== null) {
+            if ($signatureCounter !== 0 || $prevSignatureCnt !== 0) {
+                if ($prevSignatureCnt >= $signatureCounter) {
+                    throw new WebauthnException('signature counter not valid', WebauthnException::SIGNATURE_COUNTER);
+                }
+            }
+        }
+
+        return true;
     }
 
     private function getChallenge(): string
