@@ -197,9 +197,9 @@ class Webauthn
         $data->rpId = $this->replyingParty->id;
         $data->attestationFormat = $attestationObject->getAttestationFormatName();
         $data->credentialId = bin2hex($attestationObject->getAuthenticatorData()->getCredentialId());
-        $data->credentialPublicKey = $attestationObject->getAuthenticatorData()->getPublicKeyPem();
-        $data->certificateChain = $attestationObject->getCertificateChain();
-        $data->certificate = $attestationObject->getCertificatePem();
+        $data->credentialPublicKey = bin2hex($attestationObject->getAuthenticatorData()->getPublicKeyPem());
+        $data->certificateChain = bin2hex($attestationObject->getCertificateChain());
+        $data->certificate = bin2hex($attestationObject->getCertificatePem());
         $data->certificateIssuer = $attestationObject->getCertificateIssuer();
         $data->certificateSubject = $attestationObject->getCertificateSubject();
         $data->signatureCounter = $this->signatureCounter;
