@@ -62,8 +62,6 @@ class AuthenticatorData
         // signature counter: 32-bit unsigned big-endian integer.
         $this->_signCount = \unpack('Nsigncount', \substr($binary, 33, 4))['signcount'];
 
-        ray("signCount", $this->_signCount);
-
         $offset = 37;
         // https://www.w3.org/TR/webauthn/#sec-attested-credential-data
         if ($this->_flags->attestedDataIncluded) {
