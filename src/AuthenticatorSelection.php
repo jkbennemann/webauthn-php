@@ -5,7 +5,7 @@ namespace Jkbennemann\Webauthn;
 class AuthenticatorSelection
 {
     //public string $residentKeyType;
-    public ?string $authenticatorAttachment = null;
+    public ?string $authenticatorAttachment;
 
     public function __construct(public string $userVerification, public bool $requiresResidentKey, ?bool $crossPlatform = null)
     {
