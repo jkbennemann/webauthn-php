@@ -8,7 +8,7 @@ class PublicKey
 {
     public int $timeout = 60 * 1000;
     /** @var PublicKeyCredentialParameter[] */
-    public array $pubKeyCredParams = [];
+    public array $pubKeyCredParams;
     public AuthenticatorSelection $authenticatorSelection;
     public stdClass $extensions;
     public ReplyingParty $rp;
@@ -25,11 +25,23 @@ class PublicKey
     public function __construct(
 
     ) {
+    }
+
+    public function addPublicKeys(): self
+    {
+        $this->pubKeyCredParams = [];
         $this->pubKeyCredParams[] = new PublicKeyCredentialParameter(-7);
         $this->pubKeyCredParams[] = new PublicKeyCredentialParameter(-257);
 
+        return $this;
+    }
+
+    public function setExtensions(): self
+    {
         $this->extensions = new stdClass();
         $this->extensions->exts = true;
+
+        return $this;
     }
 
     public function setReplyParty(ReplyingParty $rp): self

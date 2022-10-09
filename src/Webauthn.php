@@ -89,6 +89,8 @@ class Webauthn
             ->setExcludeCredentials($excludeCredentials)
             ->setChallenge($this->createChallenge($this->configuration->challengeLength))
             ->setTimeout($this->configuration->timeout)
+            ->setExtensions()
+            ->addPublicKeys()
             ->setAttestation($attestation);
 
         ray("public key", $publicKey);
