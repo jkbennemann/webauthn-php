@@ -58,17 +58,6 @@ class Webauthn
         $excludeCredentialIds = [],
         bool $withoutAttestation = false
     ) {
-//        validate User Verification Requirement
-//        if (\is_bool($requireUserVerification)) {
-//            $requireUserVerification = $requireUserVerification ? 'required' : 'preferred';
-//        } else if (\is_string($requireUserVerification) && \in_array(\strtolower($requireUserVerification), ['required', 'preferred', 'discouraged'])) {
-//            $requireUserVerification = \strtolower($requireUserVerification);
-//        } else {
-//            $requireUserVerification = 'preferred';
-//        }
-
-//        $args = new \stdClass();
-
         $excludeCredentials = [];
         if (is_array($excludeCredentialIds)) {
             foreach ($excludeCredentialIds as $id) {
@@ -104,74 +93,53 @@ class Webauthn
             $excludeCredentials
         );
 
-        // relying party
-//        $args->publicKey->rp = new \stdClass();
-//        $args->publicKey->rp->name = $this->_rpName;
-//        $args->publicKey->rp->id = $this->_rpId;
-
-//        $args->publicKey->authenticatorSelection = new \stdClass();
-//        $args->publicKey->authenticatorSelection->userVerification = $requireUserVerification;
-//        if (\is_bool($requireResidentKey) && $requireResidentKey) {
-//            $args->publicKey->authenticatorSelection->requireResidentKey = true;
-//        } else if (\is_string($requireResidentKey) && \in_array(\strtolower($requireResidentKey), ['required', 'preferred', 'discouraged'])) {
-//            $requireResidentKey = \strtolower($requireResidentKey);
-//            $args->publicKey->authenticatorSelection->residentKey = $requireResidentKey;
-//            $args->publicKey->authenticatorSelection->requireResidentKey = $requireResidentKey === 'required';
-//        }
-//        if (is_bool($crossPlatformAttachment)) {
-//            $args->publicKey->authenticatorSelection->authenticatorAttachment = $crossPlatformAttachment ? 'cross-platform' : 'platform';
-//        }
-
-        // user
-//        $args->publicKey->user = new \stdClass();
-//        $args->publicKey->user->id = new ByteBuffer($userId); // binary
-//        $args->publicKey->user->name = $userName;
-//        $args->publicKey->user->displayName = $userDisplayName;
-
-//        $args->publicKey->pubKeyCredParams = array();
-//        $tmp = new \stdClass();
-//        $tmp->type = 'public-key';
-//        $tmp->alg = -7; // ES256
-//        $args->publicKey->pubKeyCredParams[] = $tmp;
-//        unset ($tmp);
-//
-//        $tmp = new \stdClass();
-//        $tmp->type = 'public-key';
-//        $tmp->alg = -257; // RS256
-//        $args->publicKey->pubKeyCredParams[] = $tmp;
-//        unset ($tmp);
-
-        // if there are root certificates added, we need direct attestation to validate
-        // against the root certificate. If there are no root-certificates added,
-        // anonymization ca are also accepted, because we can't validate the root anyway.
-//        $attestation = 'indirect';
-//        if (count($this->certificates)) {
-//            $attestation = 'direct';
-//        }
-
-//        $args->publicKey->attestation = count($this->formats) === 1 && in_array('none', $this->formats) ? 'none' : $attestation;
-//        $args->publicKey->extensions = new \stdClass();
-//        $args->publicKey->extensions->exts = true;
-//        $args->publicKey->timeout = $timeout * 1000; // microseconds
-//        $args->publicKey->challenge = $this->_createChallenge(); // binary
-
-        //prevent re-registration by specifying existing credentials
-//        $args->publicKey->excludeCredentials = array();
-//
-//        if (is_array($excludeCredentialIds)) {
-//            foreach ($excludeCredentialIds as $id) {
-//                $tmp = new \stdClass();
-//                $tmp->id = $id instanceof ByteBuffer ? $id : new ByteBuffer($id);  // binary
-//                $tmp->type = 'public-key';
-//                $tmp->transports = array('usb', 'ble', 'nfc', 'internal');
-//                $args->publicKey->excludeCredentials[] = $tmp;
-//                unset ($tmp);
-//            }
-//        }
-
-//        return $args;
-
         return $publicKey;
+    }
+
+    /**
+     * @throws WebauthnException
+     */
+    public function getVerifyArgs(
+        string $requireUserVerification,
+        array $credentialIds = [],
+        int $timeout = 60,
+    ): PublicKey
+    {
+
+//        // validate User Verification Requirement
+//        if (\is_bool($requireUserVerification)) {
+//            $requireUserVerification = $requireUserVerification ? 'required' : 'preferred';
+//        } else if (\is_string($requireUserVerification) && \in_array(\strtolower($requireUserVerification), ['required', 'preferred', 'discouraged'])) {
+//            $requireUserVerification = \strtolower($requireUserVerification);
+//        } else {
+//            $requireUserVerification = 'preferred';
+//        }
+
+        $allowedCredentials = [];
+        foreach ($credentialIds as $id) {
+            $allowedCredentials[] = new PublicKeyLoginParameter(
+                $id instanceof ByteBuffer ? $id : new ByteBuffer($id),
+                $this->configuration->allowedTransportTypes,
+            );
+        }
+
+        return new PublicKey(
+            $this->replyingParty,
+            new User('', '', ''),
+            new AuthenticatorSelection($requireUserVerification, false, null),
+            $timeout,
+            $this->createChallenge($this->configuration->challengeLength),
+            null,
+            $allowedCredentials
+        );
+
+//        $args = new \stdClass();
+//        $args->publicKey = new \stdClass();
+//        $args->publicKey->timeout = $timeout * 1000; // microseconds
+//        $args->publicKey->challenge = $this->_createChallenge();  // binary
+//        $args->publicKey->userVerification = $requireUserVerification;
+//        $args->publicKey->rpId = $this->replyingParty->id;
+//        return $args;
     }
 
     /**
