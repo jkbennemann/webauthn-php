@@ -118,7 +118,7 @@ class Webauthn
         $allowedCredentials = [];
         foreach ($credentialIds as $id) {
             $allowedCredentials[] = new PublicKeyLoginParameter(
-                hex2bin($id),
+                new ByteBuffer(hex2bin($id)),
                 $this->configuration->allowedTransportTypes,
             );
         }

@@ -6,7 +6,7 @@ class PublicKeyLoginParameter
 {
     public string $type = 'public-key';
 
-    public function __construct(public string $id, public array $transports = [])
+    public function __construct(public ByteBuffer $id, public array $transports = [])
     {
     }
 }
