@@ -8,6 +8,7 @@ class PublicKey
 {
     public int $timeout;
     public array $pubKeyCredParams = [];
+    public string $userVerification;
     public stdClass $extensions;
 
     public function __construct(
@@ -21,6 +22,7 @@ class PublicKey
         public array $excludeCredentials = [],
     ) {
         $this->timeout = $timeout * 1000;
+        $this->userVerification = $this->authenticatorSelection->userVerification;
 
         $this->pubKeyCredParams[] = new PublicKeyCredentialParameter(-7);
         $this->pubKeyCredParams[] = new PublicKeyCredentialParameter(-257);
