@@ -23,7 +23,7 @@ use stdClass;
 class Webauthn
 {
     private array $formats = [];
-    private string $challenge = '';
+    private ?ByteBuffer $challenge = null;
     private array $certificates = [];
     private int $signatureCounter = 0;
     private ReplyingParty $replyingParty;
@@ -80,18 +80,18 @@ class Webauthn
         }
 
         $rp = new ReplyingParty($this->configuration->name, $this->configuration->identifier);
-        $user = new User($userId, $userName, $userDisplayName);
+        $user = new User(new ByteBuffer($userId), $userName, $userDisplayName);
         $authenticatorSelection = new AuthenticatorSelection($userVerificationType, false, $crossPlatformAttachment);
-        $publicKey = new PublicKey(
-            $rp,
-            $user,
-            $authenticatorSelection,
-            $this->configuration->timeout,
-            $this->createChallenge($this->configuration->challengeLength),
-            count($this->formats) === 1 && in_array('none', $this->formats) ? 'none' : $attestation,
-            [],
-            $excludeCredentials
-        );
+        $publicKey = (new PublicKey())
+            ->setUser($user)
+            ->setReplyParty($rp)
+            ->setAuthenticatorSelection($authenticatorSelection)
+            ->setExcludeCredentials($excludeCredentials)
+            ->setChallenge($this->createChallenge($this->configuration->challengeLength))
+            ->setTimeout($this->configuration->timeout)
+            ->setAttestation($attestation);
+
+        ray("public key", $publicKey);
 
         return $publicKey;
     }
@@ -249,7 +249,7 @@ class Webauthn
     /**
      * @throws WebauthnException
      */
-    private function createChallenge(int $length): string
+    private function createChallenge(int $length): ByteBuffer
     {
         if (! $this->challenge) {
             $this->challenge = ByteBuffer::randomBuffer($length);

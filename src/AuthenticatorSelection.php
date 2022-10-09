@@ -4,21 +4,21 @@ namespace Jkbennemann\Webauthn;
 
 class AuthenticatorSelection
 {
-    public string $residentKeyType;
-    public ?string $authenticatorAttachment = 'cross-platform';
+    //public string $residentKeyType;
+    public ?string $authenticatorAttachment = null;
 
-    public function __construct(public string $userVerification, public bool $requiresResidentKey, ?bool $crossPlatform)
+    public function __construct(public string $userVerification, public bool $requiresResidentKey, ?bool $crossPlatform = null)
     {
-        if ($requiresResidentKey) {
-            $this->residentKeyType = $userVerification;
+//        if ($requiresResidentKey) {
+//            $this->residentKeyType = $userVerification;
+//        }
+
+        if ($crossPlatform === true) {
+            $this->authenticatorAttachment = 'cross-platform';
         }
 
         if ($crossPlatform === false) {
             $this->authenticatorAttachment = 'platform';
-        }
-
-        if (is_null($crossPlatform)) {
-            $this->authenticatorAttachment = null;
         }
     }
 }

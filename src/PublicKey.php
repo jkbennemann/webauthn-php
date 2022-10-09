@@ -6,28 +6,85 @@ use stdClass;
 
 class PublicKey
 {
-    public int $timeout;
+    public int $timeout = 60 * 1000;
+    /** @var PublicKeyCredentialParameter[] */
     public array $pubKeyCredParams = [];
-    public string $userVerification;
+    public AuthenticatorSelection $authenticatorSelection;
     public stdClass $extensions;
+    public ReplyingParty $rp;
+    public User $user;
+    public ByteBuffer $challenge;
+    public array $excludeCredentials;
+    public array $allowCredentials;
+    public string $attestation = 'direct';
 
     public function __construct(
-        public ReplyingParty $rp,
-        public User $user,
-        public AuthenticatorSelection $authenticatorSelection,
-        int $timeout,
-        public string $challenge,
-        public ?string $attestation,
-        public array $allowedCredentials = [],
-        public array $excludeCredentials = [],
-    ) {
-        $this->timeout = $timeout * 1000;
-        $this->userVerification = $this->authenticatorSelection->userVerification;
 
+    ) {
         $this->pubKeyCredParams[] = new PublicKeyCredentialParameter(-7);
         $this->pubKeyCredParams[] = new PublicKeyCredentialParameter(-257);
 
         $this->extensions = new stdClass();
         $this->extensions->exts = true;
+    }
+
+    public function setReplyParty(ReplyingParty $rp): self
+    {
+        $this->rp = $rp;
+
+        return $this;
+    }
+
+    public function setTimeout(int $timeout): self
+    {
+        $this->timeout = $timeout * 1000;
+
+        return $this;
+    }
+
+    public function setAuthenticatorSelection(AuthenticatorSelection $authenticatorSelection): self
+    {
+        $this->authenticatorSelection = $authenticatorSelection;
+
+        return $this;
+    }
+
+    public function setUser(User $user): self
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function setAttestation(string $attestation): self
+    {
+        $this->attestation = $attestation;
+
+        return $this;
+    }
+
+    public function setChallenge(string|ByteBuffer $challenge): self
+    {
+        if ($challenge instanceof ByteBuffer) {
+            $this->challenge = $challenge;
+        } else {
+            $this->challenge = new ByteBuffer($challenge);
+        }
+
+        return $this;
+    }
+
+    public function setExcludeCredentials(array $excludeCredentials): self
+    {
+        $this->excludeCredentials = $excludeCredentials;
+
+        return $this;
+    }
+
+    public function setAllowCredentials(array $allowCredentials): self
+    {
+        $this->allowCredentials = $allowCredentials;
+
+        return $this;
     }
 }
