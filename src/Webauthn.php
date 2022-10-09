@@ -103,9 +103,7 @@ class Webauthn
         string $requireUserVerification,
         array $credentialIds = [],
         int $timeout = 60,
-    ): PublicKey
-    {
-
+    ): PublicKey {
 //        // validate User Verification Requirement
 //        if (\is_bool($requireUserVerification)) {
 //            $requireUserVerification = $requireUserVerification ? 'required' : 'preferred';
